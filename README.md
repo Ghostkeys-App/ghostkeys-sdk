@@ -1,18 +1,20 @@
 # Ghostkeys SDK
 
--- WIP --
-
 ## Introduction
 This SDK offers standard typescript serialisation capabilities compatible with the Ghostkeys streamlined vault backend endpoints. Invoke a function with the corresponding data to generate an array of bytes, then send that directly to the canister endpoint for ultra-fast syncs.
 
-## Introduction
 A vault stores three types of data: *logins*, *secure notes* and a *spreadsheet*. *Logins* and *spreadsheets* are represented by a two dimensional *grid* composed of *cells* which have *co-ordinates* and *data*. *Secure Notes* are represented by a 1-dimensional array. 
 
 This schema lays out the most efficient way of communicating this data to a vault canister, and should be used as the basis for implementing encoders. 
 
 All *data* should be securely encrypted at the client-side before being serialised and sent. *Headers* must be sent in plaintext.
 
+It is strongly recommended that this SDK (or future SDKs for other languages) be used wherever possible, however should the need arise to write a custom serialiser for your language of choice, and for the purposes of transparency, the serialisation format is described in detail below:
+
+# Serialisation Schema
+
 ## Cells
+Cells are common for both *spreadsheet* and *login data* messages, so are described first.
 Each cell has the following properties:
 - The *size* of the encrypted *data*
 - An *x* co-ordinate,
@@ -125,3 +127,39 @@ Note that this will **implicitly delete all logins in the targeted columns**.
 This is identical to a spreadsheet sync.
 #### Login deletion
 This is identical to a spreadsheet deletion.
+
+## Secure Notes
+Secure notes are represented as a 1-dimensional array of entries indexed by a numerical *x co-ordinate*. Each entry contains a *label* and a *value*. 
+
+Each secure note has a header, followed by *label size* bytes of encrypted label data and then *note size* bytes of encrypted note data. The header has the format:
+
+| Byte | Property                         |
+| ---- | -------------------------------- |
+| 0    | 8-bit *label size*               |
+| 1    | Upper byte of 16-bit *note size* |
+| 2    | Lower byte of 16-bit *note size* |
+| 3    | 8-bit *x co-ordinate*            |
+
+## Global Sync
+Users may have modified both logins and spreadsheets before syncing their vaults. To reduce the canister ingress call fees an additional endpoint is offered which syncs both the spreadsheet and logins in a single call. This takes the form of a contiguous vector of bytes composed of a *global sync header* followed by a **Sync** format message for the spreadsheet, then a **Full Sync** format message for the logins.
+
+The *global sync header* contains the following information:
+- The *size* of the *spreadsheet* portion of the message as a 5-byte number.
+- The *size* of the *secret notes* portion of the message as a 5-byte number.
+The *size* of the spreadsheet does not need to be included as it can be derived from the *size* of the *global sync header* and the *size* of the *logins* portion of the message, against the total size of the message.
+
+The full message, of length `$TOTAL_SIZE` follows the format:
+```
+01 02 03 04 05 -Size of the spreadsheet portion $SS_SIZE
+06 07 08 09 0a -Size of the secret notes portion $SN_SIZE
+
+...            -$SS_SIZE bytes of spreadsheet data
+
+...            -$SN_SIZE bytes of secret notes data
+
+01 02 03 04 05 -Size of the login metadata data $META_SIZE
+...            -$L_META bytes of metadata data
+...            -'$TOTAL_SIZE - $META_SIZE - SS_SIZE - $SN_SIZE - 10' bytes of logins data
+```
+
+15 bytes are subtracted from the last segment to account for the 15 bytes representing `$SS_SIZE` and `$SN_SIZE` at the start, and the 5 bytes representing `$META_SIZE`.
