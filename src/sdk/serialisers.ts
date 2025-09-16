@@ -1,3 +1,28 @@
+import { M } from "vitest/dist/chunks/reporters.d.BFLkQcL6";
+
+export type FlexGridColumns = { [x: number]: { name: string, hidden: boolean }};
+
+export function serializeSpreadsheetColumns(map: FlexGridColumns) : Uint8Array {
+  const chunks: number[] = [];
+
+  for ( const entry in map ) {
+    const x = Number(entry);
+    const column = map[x];
+    const name = column?.name || "";
+    const nameBytes = new TextEncoder().encode(name);
+    const len = name.length;
+    const hidden = column?.hidden || false;
+
+    chunks.push((len >> 8) & 0xff);
+    chunks.push(len & 0xff);
+    chunks.push(hidden ? 0x1 : 0x0);
+    chunks.push(x & 0xff);
+
+    chunks.push(...nameBytes);
+  }
+
+  return new Uint8Array(chunks);
+}
 
 export type SpreadsheetMap = { [x: number]: { [y: number]: string } };
 
