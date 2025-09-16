@@ -4,7 +4,7 @@ import {
     serializeLoginsMetadata, type LoginsMetadataMap,
     serializeSecureNotes, type SecureNotesMap,
     serializeGlobalSync
-} from './index';
+} from '../../index';
 
 describe('serializeSpreadsheet', () => {
   it('serializes a single cell', () => {
