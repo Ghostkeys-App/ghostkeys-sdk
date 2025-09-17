@@ -75,6 +75,36 @@ export function serializeLoginsMetadata(map: LoginsMetadataMap): Uint8Array {
     return new Uint8Array(chunks);
 }
 
+export type LoginsMap = { [x: number]: { name: string, entries: { [y: number]: { username: string, password: string }}}};
+
+export function serializeLogins(map: LoginsMap) {
+  const chunks : number[] = [];
+
+  for ( const x in map ) {
+    const ind_x = Number(x);
+    for ( const y in map ) {
+      const ind_y = Number(y);
+      const usernameBytes = new TextEncoder().encode(map[x]?.entries[y]?.username || "");
+      const passwordBytes = new TextEncoder().encode(map[x]?.entries[y]?.password || "");
+
+      const unameLen = usernameBytes.length;
+      const passwordLen = passwordBytes.length;
+
+      chunks.push(ind_x & 0xff);
+      chunks.push(ind_y & 0xff);
+      chunks.push ((unameLen >> 8) & 0xff);
+      chunks.push(unameLen & 0xff);
+      chunks.push((passwordLen >> 8) & 0xff);
+      chunks.push(passwordLen & 0xff);
+
+      chunks.push(...usernameBytes);
+      chunks.push(...passwordBytes);
+    }
+  }
+
+  return new Uint8Array(chunks);
+}
+
 export type SecureNotesMap = { [index: number]: { label: string, note: string } };
 
 export function serializeSecureNotes(map: SecureNotesMap): Uint8Array {

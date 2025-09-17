@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { 
     serializeSpreadsheet, type SpreadsheetMap, 
     serializeLoginsMetadata, type LoginsMetadataMap,
+    serializeLogins, type LoginsMap,
     serializeSecureNotes, type SecureNotesMap,
     serializeGlobalSync
 } from '../../index';
