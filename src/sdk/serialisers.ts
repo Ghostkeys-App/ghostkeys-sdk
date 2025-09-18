@@ -148,20 +148,23 @@ export function serializeSecureNotes(map: SecureNotesMap): Uint8Array {
  */
 export function serializeGlobalSync(
   spreadsheet: SpreadsheetMap,
+  columns: FlexGridColumns,
   secureNotes: SecureNotesMap,
   loginsMetadata: LoginsMetadataMap,
   logins: SpreadsheetMap
 ): Uint8Array {
   // Serialize each section
   const spreadsheetBytes = serializeSpreadsheet(spreadsheet);
+  const columnsBytes = serializeSpreadsheetColumns(columns);
   const secureNotesBytes = serializeSecureNotes(secureNotes);
   const loginsMetadataBytes = serializeLoginsMetadata(loginsMetadata);
   const loginsBytes = serializeSpreadsheet(logins);
 
   // Sizes
-  const spreadsheetSize = spreadsheetBytes.length;
-  const secureNotesSize = secureNotesBytes.length;
-  const loginsMetadataSize = loginsMetadataBytes.length;
+  const spreadsheetSize     = spreadsheetBytes.length;
+  const columnsSize         = columnsBytes.length;
+  const secureNotesSize     = secureNotesBytes.length;
+  const loginsMetadataSize  = loginsMetadataBytes.length;
 
   // 5-byte big-endian size helper
   function encodeSize(size: number): number[] {
@@ -179,8 +182,10 @@ export function serializeGlobalSync(
   // Compose final byte array
   const totalLength =
     5 + // spreadsheet size header
+    5 + // columns size header
     5 + // secure notes size header
     spreadsheetBytes.length +
+    columnsBytes.length +
     secureNotesBytes.length +
     5 + // logins metadata size header
     loginsMetadataBytes.length +
@@ -193,6 +198,10 @@ export function serializeGlobalSync(
   result.set(encodeSize(spreadsheetSize), offset);
   offset += 5;
 
+  // Columns size header
+  result.set(encodeSize(columnsSize), offset);
+  offset += 5;
+
   // Secure notes size header
   result.set(encodeSize(secureNotesSize), offset);
   offset += 5;
@@ -200,6 +209,10 @@ export function serializeGlobalSync(
   // Spreadsheet bytes
   result.set(spreadsheetBytes, offset);
   offset += spreadsheetBytes.length;
+
+  // Columns bytes
+  result.set(columnsBytes, offset);
+  offset + columnsSize;
 
   // Secure notes bytes
   result.set(secureNotesBytes, offset);

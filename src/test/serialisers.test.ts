@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { 
     serializeSpreadsheet, type SpreadsheetMap, 
     serializeLoginsMetadata, type LoginsMetadataMap,
-    serializeLogins, type LoginsMap,
     serializeSecureNotes, type SecureNotesMap,
-    serializeGlobalSync
+    serializeGlobalSync,
+    type FlexGridColumns,
+    serializeSpreadsheetColumns
 } from '../../index';
 
 describe('serializeSpreadsheet', () => {
@@ -171,19 +172,23 @@ function encodeSize(size: number): number[] {
 describe('serializeGlobalSync', () => {
   it('serializes all sections correctly', () => {
     const spreadsheet: SpreadsheetMap = { 1: { 2: 'A' } };
+    const columns: FlexGridColumns = { 1: { name: 'name', hidden: false}};
     const secureNotes: SecureNotesMap = { 3: { label: 'foo', note: 'bar' } };
     const loginsMetadata: LoginsMetadataMap = { 4: 'meta' };
     const logins: SpreadsheetMap = { 5: { 6: 'B' } };
 
     const spreadsheetBytes = serializeSpreadsheet(spreadsheet);
+    const columnsBytes = serializeSpreadsheetColumns(columns);
     const secureNotesBytes = serializeSecureNotes(secureNotes);
     const loginsMetadataBytes = serializeLoginsMetadata(loginsMetadata);
     const loginsBytes = serializeSpreadsheet(logins);
 
     const expected = new Uint8Array([
       ...encodeSize(spreadsheetBytes.length),
+      ...encodeSize(columnsBytes.length),
       ...encodeSize(secureNotesBytes.length),
       ...spreadsheetBytes,
+      ...columnsBytes,
       ...secureNotesBytes,
       ...encodeSize(loginsMetadataBytes.length),
       ...loginsMetadataBytes,
@@ -192,6 +197,7 @@ describe('serializeGlobalSync', () => {
 
     const result = serializeGlobalSync(
       spreadsheet,
+      columns,
       secureNotes,
       loginsMetadata,
       logins
@@ -202,11 +208,13 @@ describe('serializeGlobalSync', () => {
 
   it('handles empty sections', () => {
     const spreadsheet: SpreadsheetMap = {};
+    const columns: FlexGridColumns = {};
     const secureNotes: SecureNotesMap = {};
     const loginsMetadata: LoginsMetadataMap = {};
     const logins: SpreadsheetMap = {};
 
     const expected = new Uint8Array([
+      ...encodeSize(0),
       ...encodeSize(0),
       ...encodeSize(0),
       // no spreadsheet bytes
@@ -218,6 +226,7 @@ describe('serializeGlobalSync', () => {
 
     const result = serializeGlobalSync(
       spreadsheet,
+      columns,
       secureNotes,
       loginsMetadata,
       logins
