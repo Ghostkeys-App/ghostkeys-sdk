@@ -5,7 +5,24 @@ import {
     serializeLoginsMetadata, type LoginsMetadataMap,
     serializeSecureNotes, type SecureNotesMap,
     serializeGlobalSync,
+    type VaultNames,
+    serializeVaultNames,
 } from '../../index';
+
+describe('serializeVaultNames', () => {
+  it('serializes names', () => {
+    const names: VaultNames = [{vault_id: Uint8Array.from([0, 1, 2]), vault_name: 'abcd'}];
+    const expected = new Uint8Array([
+      3,
+      0, 4,
+      0, 1, 2,
+      97, 98, 99, 100
+    ]);
+
+    const result = serializeVaultNames(names);
+    expect(result).toEqual(expected)
+  })
+})
 
 describe('serializeSpreadsheetColumns', () => {
   it('serializes columns', () => {
