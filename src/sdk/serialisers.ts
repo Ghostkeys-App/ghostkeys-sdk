@@ -1,5 +1,3 @@
-import { M } from "vitest/dist/chunks/reporters.d.BFLkQcL6";
-
 export type FlexGridColumns = { [x: number]: { name: string, hidden: boolean }};
 
 export function serializeSpreadsheetColumns(map: FlexGridColumns) : Uint8Array {
@@ -212,7 +210,7 @@ export function serializeGlobalSync(
 
   // Columns bytes
   result.set(columnsBytes, offset);
-  offset + columnsSize;
+  offset += columnsBytes.length;
 
   // Secure notes bytes
   result.set(secureNotesBytes, offset);

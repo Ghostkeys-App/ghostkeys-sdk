@@ -1,12 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import { 
     serializeSpreadsheet, type SpreadsheetMap, 
+    serializeSpreadsheetColumns, type FlexGridColumns,
     serializeLoginsMetadata, type LoginsMetadataMap,
     serializeSecureNotes, type SecureNotesMap,
     serializeGlobalSync,
-    type FlexGridColumns,
-    serializeSpreadsheetColumns
 } from '../../index';
+
+describe('serializeSpreadsheetColumns', () => {
+  it('serializes columns', () => {
+    const columns: FlexGridColumns = { 0: { name: 'abc', hidden: false}, 1: { name: 'defg', hidden: true}};
+    const result = serializeSpreadsheetColumns(columns);
+
+    const expected = new Uint8Array([
+      0, 3, //name length 3
+      0,    // hidden
+      0,    // x
+      97, 98, 99,
+      0, 4, // name length 4
+      1,    // hidden
+      1,    // x
+      100, 101, 102, 103
+    ]);
+    expect(result).toEqual(expected);
+  })
+})
 
 describe('serializeSpreadsheet', () => {
   it('serializes a single cell', () => {
