@@ -9,6 +9,9 @@
     "build": "tsc",
     "test": "npx vitest"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [],
   "author": "Eilidh Merrill",
   "license": "ISC",
