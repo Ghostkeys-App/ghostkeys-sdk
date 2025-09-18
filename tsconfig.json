@@ -24,5 +24,7 @@
     "skipDefaultLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   }
 }
