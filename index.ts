@@ -1,1 +1,1 @@
-export * from "./src/sdk/serialisers.ts";
+export * from "./src/sdk/serialisers";
