@@ -37,7 +37,7 @@ export function serializeSpreadsheetColumns(map: FlexGridColumns) : Uint8Array {
 
     chunks.push((len >> 8) & 0xff);
     chunks.push(len & 0xff);
-    chunks.push(hidden ? 0x0 : 0x1);
+    chunks.push(hidden ? 0x1 : 0x0);
     chunks.push(x & 0xff);
 
     chunks.push(...nameBytes);
